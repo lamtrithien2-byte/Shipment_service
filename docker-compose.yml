@@ -1,0 +1,31 @@
+services:
+  db:
+    image: postgres:16
+    container_name: shipment_service_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 200202
+      POSTGRES_DB: shipment_service
+    ports:
+      - "5434:5432"
+    volumes:
+      - shipment_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d shipment_service"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: .
+    container_name: shipment_service_api
+    env_file:
+      - .env.docker
+    ports:
+      - "8002:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  shipment_db_data:
